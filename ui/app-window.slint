@@ -1,0 +1,49 @@
+import { Button, VerticalBox, StandardTableView, SpinBox, TabWidget, LineEdit, ComboBox } from "std-widgets.slint";
+
+export component AppWindow inherits Window {
+    
+    height: 600px;
+    title: "Конвертер всего и вся";
+    width: 800px;
+    
+    TabWidget {
+        Tab {
+            title: "Скачивание контента";
+            VerticalBox {
+                height: 155px;
+                padding: 12px;
+                in property <string> url_in;
+                in-out property <string> destination;
+                in property <[string]> types: ["Видео", "Аудио"];
+                callback download();
+                Text {
+                    text: "Вставьте ссылку на файл";
+                    vertical-alignment: TextVerticalAlignment.bottom;
+                }
+                LineEdit {
+                    input-type: InputType.text;
+                    placeholder-text: "Ссылка на файл .m3u8";
+                    text: "";
+                }
+                Text {
+                    text: "Выберите тип скачиваемого контента";
+                    vertical-alignment: TextVerticalAlignment.bottom;
+                }
+                ComboBox {
+                    model: types;
+                }
+                Button {
+                    text: "Скачать";
+                    clicked => {download();}
+                }
+            }
+        }
+        Tab {
+            title: "Преобразование видео";
+        }
+        Tab {
+            title: "Преобразование аудио";
+        }
+    }
+    
+}
