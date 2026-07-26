@@ -7,8 +7,8 @@ export component AppWindow inherits Window {
     width: 800px;
     callback download(string);
     in-out property <int> index;
-    in-out property <bool> is_working;
-    in-out property <bool> is_success;
+    in-out property <bool> is_working: false;
+    in-out property <bool> is_success: false;
     TabWidget {
         Tab {
             title: "Скачивание контента";
@@ -29,7 +29,7 @@ export component AppWindow inherits Window {
                     input-type: InputType.text;
                     placeholder-text: "Ссылка на файл .m3u8";
                     text: "";
-                    accepted(text) => {url_in = text}
+                    edited(text) => {url_in = text}
                 }
                 Text {
                     text: "Выберите тип скачиваемого контента";
@@ -51,15 +51,16 @@ export component AppWindow inherits Window {
                 }
                 Spinner {
                     visible: is_working;
-                    indeterminate: true;
+                    height: 35px;
+                    
                 }
             }
         }
         Tab {
-            title: "Преобразование видео";
+            title: "Преобразование";
         }
         Tab {
-            title: "Преобразование аудио";
+            title: "Массовое преобразование";
         }
     }
     
