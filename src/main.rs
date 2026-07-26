@@ -27,7 +27,15 @@ fn main() -> Result<(), Box<dyn Error>> {
             match file_path {
                 Some(path) => {
                     ui.set_is_working(true);
-                    downloader::download(&url_in, &path.to_string_lossy());
+                    match downloader::download(&url_in, &path.to_string_lossy()).success() {
+                        true => {
+                            ui.set_is_working(false);
+                            ui.set_is_success(true);
+                        }
+                        false => {
+                            
+                        }
+                    }ui.set_is_working(false);
                 }
                 None => {}
             }
