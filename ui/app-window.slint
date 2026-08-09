@@ -1,4 +1,4 @@
-import { Button, VerticalBox, StandardTableView, SpinBox, TabWidget, LineEdit, ComboBox, Spinner } from "std-widgets.slint";
+import { Button, VerticalBox, StandardTableView, SpinBox, TabWidget, LineEdit, ComboBox, Spinner, StandardButton } from "std-widgets.slint";
 
 export component AppWindow inherits Window {
     
@@ -9,6 +9,8 @@ export component AppWindow inherits Window {
     in-out property <int> index;
     in-out property <bool> is_working: false;
     in-out property <bool> is_success: false;
+    in-out property <bool> is_error: false;
+    in-out property <string> error_details: "";
     TabWidget {
         Tab {
             title: "Скачивание контента";
@@ -17,7 +19,7 @@ export component AppWindow inherits Window {
             
             in property <[string]> types: ["Видео", "Аудио"];
             VerticalBox {
-                height: 155px;
+                height: 300px;
                 padding: 12px;
                 
                 
@@ -52,7 +54,20 @@ export component AppWindow inherits Window {
                 Spinner {
                     visible: is_working;
                     height: 35px;
-                    
+                    indeterminate: true;
+                }
+                Dialog {
+                    visible: is_error; 
+                    VerticalBox {
+                        Text {
+                            font-weight: 800;
+                            text: "Ошибка при скачивании";
+                        }
+                        Text {
+                            text: error_details;
+                        }
+                    }
+                    StandardButton { kind: ok; }
                 }
             }
         }
