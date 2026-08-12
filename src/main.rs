@@ -33,7 +33,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 thread::spawn(move || {
                     let result = downloader::download(&url, &path);
                     
-                    let _ = slint::spawn_local(async move {
+                    slint::invoke_from_event_loop(move ||{
                         let ui = ui_handle.unwrap();
                         ui.set_is_working(false);
                         match result {

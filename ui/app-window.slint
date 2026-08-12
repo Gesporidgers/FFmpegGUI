@@ -1,4 +1,4 @@
-import { Button, VerticalBox, StandardTableView, SpinBox, TabWidget, LineEdit, ComboBox, Spinner, StandardButton } from "std-widgets.slint";
+import { Button, VerticalBox, StandardTableView, SpinBox, TabWidget, LineEdit, ComboBox, Spinner, StandardButton, HorizontalBox, RadioGroup, ProgressIndicator } from "std-widgets.slint";
 
 export component AppWindow inherits Window {
     
@@ -7,10 +7,13 @@ export component AppWindow inherits Window {
     width: 800px;
     callback download(string);
     in-out property <int> index;
+    in-out property <int> mindex1;
+    in-out property <int> mindex2;
     in-out property <bool> is_working: false;
     in-out property <bool> is_success: false;
     in-out property <bool> is_error: false;
     in-out property <string> error_details: "";
+    in-out property <[string]> ignored_streams: ["Видео", "Аудио", "Нет"];
     TabWidget {
         Tab {
             title: "Скачивание контента";
@@ -73,6 +76,63 @@ export component AppWindow inherits Window {
         }
         Tab {
             title: "Преобразование";
+            property <[string]> measurements: ["K", "M"];
+            VerticalBox {
+                height: 450px;
+                spacing: 12px;
+                HorizontalBox {
+                    LineEdit {
+                        read-only: true;
+                    }
+                    Button {
+                        text: "Выбрать";
+                    }
+                }
+                RadioGroup {
+                    title: "Игнорирование потока";
+                    for stream[i] in ignored_streams : RadioButton {
+                            text: stream; 
+                            toggled => { index = i; }
+                        }
+                }
+                HorizontalBox {
+                    spacing: 15px;
+                    HorizontalBox {
+                        spacing: 6px;
+                        LineEdit {
+                            input-type: InputType.number;
+                            placeholder-text: "Выберите битрейт видео";
+                        }
+                        ComboBox {
+                            model: measurements;
+                            selected(current-value) => {mindex1 = self.current-index}
+                        }
+                    }
+                    HorizontalBox {
+                        spacing: 6px;
+                        LineEdit {
+                            input-type: InputType.number;
+                            placeholder-text: "Выберите битрейт аудио";
+                        }
+                        ComboBox {
+                            model: measurements;
+                            selected(current-value) => {mindex2 = self.current-index}
+                        }
+                    }   
+                }
+                LineEdit {
+                    placeholder-text: "Введите точное название кодека видео";
+                }
+                LineEdit {
+                    placeholder-text: "Введите точное название кодека аудио";
+                }
+                Button {
+                    text: "Конвертировать";
+                }
+                ProgressIndicator {
+                    visible: is_working;
+                }
+            }
         }
         Tab {
             title: "Массовое преобразование";
