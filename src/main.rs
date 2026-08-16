@@ -3,6 +3,8 @@
 
 use std::{error::Error, thread};
 
+use slint::SharedString;
+
 mod downloader;
 
 slint::include_modules!();
@@ -10,12 +12,13 @@ slint::include_modules!();
 
 fn main() -> Result<(), Box<dyn Error>> {
     let ui = AppWindow::new()?;
+    let ui_clone = ui.clone_strong();
 
-    ui.on_download({
-        let ui_handle = ui.as_weak();
-        move |url_in| {
+    ui.on_download(move |url: SharedString, mode|{
+        let ui_handle = ui_clone.as_weak();
+        
             let ui = ui_handle.unwrap();
-            let type_tuple = match ui.get_index() {
+            let type_tuple = match mode {
                 0 => ("Видеофайлы", &["mp4"]),
                 1 => ("Аудиофайлы", &["m4a"]),
                 _ => panic!("error in index"),
@@ -28,7 +31,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             if let Some(path) = file_path {
                 ui.set_is_working(true);
                 let ui_handle = ui_handle.clone();
-                let url = url_in.clone();
+                let url = url.clone();
                 let path = path.to_string_lossy().into_owned();
                 thread::spawn(move || {
                     let result = downloader::download(&url, &path);
@@ -50,7 +53,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                     });
                 });
             }
-        }
     });
 
     ui.run()?;

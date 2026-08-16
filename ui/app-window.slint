@@ -1,138 +1,41 @@
-import { Button, VerticalBox, StandardTableView, SpinBox, TabWidget, LineEdit, ComboBox, Spinner, StandardButton, HorizontalBox, RadioGroup, ProgressIndicator } from "std-widgets.slint";
+import { TabWidget } from "std-widgets.slint";
+import { DownloadTab } from "download-tab.slint";
+import { ConverterTab, ConvertOptions } from "converter-tab.slint";
 
 export component AppWindow inherits Window {
     
     height: 600px;
     title: "Конвертер всего и вся";
     width: 800px;
-    callback download(string);
-    in-out property <int> index;
-    in-out property <int> mindex1;
-    in-out property <int> mindex2;
+    
+    in-out property <int> tab-index: 0;
+
+    callback download(string,int);
+    callback convert(ConvertOptions);
+    
+    
     in-out property <bool> is_working: false;
     in-out property <bool> is_success: false;
     in-out property <bool> is_error: false;
     in-out property <string> error_details: "";
-    in-out property <[string]> ignored_streams: ["Видео", "Аудио", "Нет"];
+    changed is_error => {t1.is_error = is_error}
+    changed is_success => {t1.is_success = is_success}
+    changed is_working => {t1.is_working = is_working}
     TabWidget {
+        current-index: tab-index;
         Tab {
             title: "Скачивание контента";
-            in-out property <string> url_in;
-            in-out property <string> destination;
-            
-            in property <[string]> types: ["Видео", "Аудио"];
-            VerticalBox {
-                height: 300px;
-                padding: 12px;
+            t1 := DownloadTab {
+                download(url,mode) => {
+                    root.download(url, mode);
+                    
+                }
                 
-                
-                Text {
-                    text: "Вставьте ссылку на файл";
-                    vertical-alignment: TextVerticalAlignment.bottom;
-                }
-                LineEdit {
-                    input-type: InputType.text;
-                    placeholder-text: "Ссылка на файл .m3u8";
-                    text: "";
-                    edited(text) => {url_in = text}
-                }
-                Text {
-                    text: "Выберите тип скачиваемого контента";
-                    vertical-alignment: TextVerticalAlignment.bottom;
-                }
-                ComboBox {
-                    model: types;
-                    current-index: index;
-                    selected(current-value) => {index = self.current-index;}
-                }
-                Button {
-                    text: "Скачать";
-                    clicked => {download(url_in);}
-                }
-                Image {
-                    visible: is_success;
-                    height: 35px;
-                    source: @image-url("images/success.svg");
-                }
-                Spinner {
-                    visible: is_working;
-                    height: 35px;
-                    indeterminate: true;
-                }
-                Dialog {
-                    visible: is_error; 
-                    VerticalBox {
-                        Text {
-                            font-weight: 800;
-                            text: "Ошибка при скачивании";
-                        }
-                        Text {
-                            text: error_details;
-                        }
-                    }
-                    StandardButton { kind: ok; }
-                }
             }
         }
         Tab {
             title: "Преобразование";
-            property <[string]> measurements: ["K", "M"];
-            VerticalBox {
-                height: 450px;
-                spacing: 12px;
-                HorizontalBox {
-                    LineEdit {
-                        read-only: true;
-                    }
-                    Button {
-                        text: "Выбрать";
-                    }
-                }
-                RadioGroup {
-                    title: "Игнорирование потока";
-                    for stream[i] in ignored_streams : RadioButton {
-                            text: stream; 
-                            toggled => { index = i; }
-                        }
-                }
-                HorizontalBox {
-                    spacing: 15px;
-                    HorizontalBox {
-                        spacing: 6px;
-                        LineEdit {
-                            input-type: InputType.number;
-                            placeholder-text: "Выберите битрейт видео";
-                        }
-                        ComboBox {
-                            model: measurements;
-                            selected(current-value) => {mindex1 = self.current-index}
-                        }
-                    }
-                    HorizontalBox {
-                        spacing: 6px;
-                        LineEdit {
-                            input-type: InputType.number;
-                            placeholder-text: "Выберите битрейт аудио";
-                        }
-                        ComboBox {
-                            model: measurements;
-                            selected(current-value) => {mindex2 = self.current-index}
-                        }
-                    }   
-                }
-                LineEdit {
-                    placeholder-text: "Введите точное название кодека видео";
-                }
-                LineEdit {
-                    placeholder-text: "Введите точное название кодека аудио";
-                }
-                Button {
-                    text: "Конвертировать";
-                }
-                ProgressIndicator {
-                    visible: is_working;
-                }
-            }
+            ConverterTab {convert(opt) => {root.convert(opt)}}
         }
         Tab {
             title: "Массовое преобразование";
