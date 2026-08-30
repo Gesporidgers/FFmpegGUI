@@ -1,99 +1,139 @@
-import { Button, VerticalBox, StandardTableView, SpinBox, TabWidget, LineEdit, ComboBox, Spinner, StandardButton, HorizontalBox, RadioGroup, ProgressIndicator } from "std-widgets.slint";
+import { Button, VerticalBox, StandardTableView, SpinBox, TabWidget, LineEdit, ComboBox, Spinner, StandardButton, HorizontalBox, RadioGroup, ProgressIndicator, Palette } from "std-widgets.slint";
 
 export struct ConvertOptions {
-    ignored_streams: string,
+    ignored_stream: string,
     bitrate_video: float,
     bitrate_video_m: string,
     bitrate_audio: float,
     bitrate_audio_m: string,
     video_codec: string,
-    audio_codec: string
+    audio_codec: string,
+    additional: string
 }
 
 export component ConverterTab inherits Rectangle {
     in-out property <ConvertOptions> options: {
-        ignored_streams: "Нет",
+        ignored_stream: "Нет",
         bitrate_video: 0,
-        bitrate_video_m: "",
+        bitrate_video_m: "K",
         bitrate_audio: 0,
-        bitrate_audio_m: "",
+        bitrate_audio_m: "K",
         video_codec: "",
-        audio_codec: ""
+        audio_codec: "",
+        additional: ""
     };
+
     property <[string]> ignored_streams: ["Нет", "Видео", "Аудио" ];
     property <[string]> measurements: ["K", "M"];
-    property <bool> is_success: false;
-    property <bool> is_working: false;
-    property <bool> is_error: false;
-    property <string> error_details: "";
+    
 
-    callback convert(ConvertOptions);
-            VerticalBox {
-                height: 450px;
-                spacing: 12px;
-                HorizontalBox {
-                    LineEdit {
-                        read-only: true;
-                    }
-                    Button {
-                        text: "Выбрать";
-                    }
-                }
-                RadioGroup {
-                    title: "Игнорирование потока";
-                    
-                    for stream[i] in ignored_streams : RadioButton {
-                            text: stream; 
-                            toggled => { options.ignored-streams = parent.current-value;}
-                        }
-                }
-                HorizontalBox {
-                    spacing: 15px;
-                    HorizontalBox {
-                        spacing: 6px;
-                        visible: true;
-                        LineEdit {
-                            input-type: InputType.number;
-                            placeholder-text: "Выберите битрейт видео";
-                            accepted(text) => {options.bitrate-video = text.to-float()}
-                            enabled: options.ignored-streams != 1;
+    in-out property <bool> is_success: false;
+    in-out property <bool> is_working: false;
+    in-out property <bool> is_error: false;
+    in-out property <string> error_details: "";
+    in-out property <string> file_path: "";
 
-                        }
-                        ComboBox {
-                            model: measurements;
-                            current-value <=> options.bitrate-video-m;
-                            enabled: options.ignored-streams != 1;
-                        }
-                    }
-                    HorizontalBox {
-                        spacing: 6px;
-                        LineEdit {
-                            input-type: InputType.number;
-                            placeholder-text: "Выберите битрейт аудио";
-                            enabled: options.ignored-streams != 2;
-                        }
-                        ComboBox {
-                            model: measurements;
-                            current-value <=> options.bitrate-audio-m;
-                            enabled: options.ignored-streams != 2;
-                        }
-                    }   
+    callback convert(ConvertOptions,string);
+    callback pick_file();
+    callback picked_audio();
+    callback picked_video();
+
+    picked_audio => {
+        ignoring.enabled = false;
+        v_bitrate.enabled = false;
+        v_bitrate_m.enabled = false;
+        video_codec.enabled = false;
+    }
+
+    picked_video => {
+        ignoring.enabled = true;
+        v_bitrate.enabled = true;
+        v_bitrate_m.enabled = true;
+        video_codec.enabled = true;
+    }
+    VerticalBox {
+        height: 500px;
+        spacing: 12px;
+        HorizontalBox {
+            LineEdit {
+                text <=> file_path;
+                read-only: true;
+            }
+            Button {
+                text: "Выбрать";
+                clicked => { root.pick_file() }
+            }
+        }
+        ignoring := RadioGroup {
+            title: "Игнорирование потока";
+            
+            selected(value) => {
+                options.ignored-stream = value;
+            }
+            for stream in ignored_streams : RadioButton {
+                    text: stream; 
+            }
+        }
+        HorizontalBox {
+            spacing: 15px;
+            HorizontalBox {
+                spacing: 6px;
+                visible: true;
+                v_bitrate := LineEdit {
+                    input-type: InputType.number;
+                    placeholder-text: "Введите битрейт видео";
+                    accepted(text) => {options.bitrate-video = text.to-float()}
+                    enabled: options.ignored-stream != "Видео";
+
                 }
-                LineEdit {
-                    placeholder-text: "Введите точное название кодека видео";
-                    text <=> options.video-codec;
-                }
-                LineEdit {
-                    placeholder-text: "Введите точное название кодека аудио";
-                    text <=> options.audio-codec;
-                }
-                Button {
-                    text: "Конвертировать";
-                    clicked => {root.convert(options)}
-                }
-                ProgressIndicator {
-                    visible: is_working;
+                v_bitrate_m := ComboBox {
+                    model: measurements;
+                    current-value <=> options.bitrate-video-m;
+                    enabled: options.ignored-stream != "Видео";
                 }
             }
+            HorizontalBox {
+                spacing: 6px;
+                LineEdit {
+                    input-type: InputType.number;
+                    placeholder-text: "Введите битрейт аудио";
+                    accepted(text) => {options.bitrate-audio = text.to-float()}
+                    enabled: options.ignored-stream != "Аудио";
+                }
+                ComboBox {
+                    model: measurements;
+                    current-value <=> options.bitrate-audio-m;
+                    enabled: options.ignored-stream != "Аудио";
+                }
+            }   
+        }
+        video_codec := LineEdit {
+            placeholder-text: "Введите точное название кодека видео";
+            text <=> options.video-codec;
+        }
+        LineEdit {
+            placeholder-text: "Введите точное название кодека аудио";
+            text <=> options.audio-codec;
+        }
+        LineEdit {
+            placeholder-text: "Введите дополнительные опции (необязательно)";
+            text <=> options.additional;
+        }
+        Button {
+            text: "Конвертировать";
+            enabled: root.file_path != "";
+            clicked => {root.convert(options, file_path)}
+        }
+        ProgressIndicator {
+            visible: is_working;
+            indeterminate: true;
+        }
+        Image {
+            visible: is_success;
+            height: 35px;
+            source: @image-url("images/success.svg");
+            colorize: Palette.accent-background;
+        }
+    }
 }
 

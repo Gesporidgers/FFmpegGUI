@@ -5,7 +5,10 @@ use std::{error::Error, thread};
 
 use slint::SharedString;
 
+
+
 mod downloader;
+mod converter;
 
 slint::include_modules!();
 
@@ -21,7 +24,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             let type_tuple = match mode {
                 0 => ("Видеофайлы", &["mp4"]),
                 1 => ("Аудиофайлы", &["m4a"]),
-                _ => panic!("error in index"),
+                _ => panic!("error in  index"),
             };
             let file_path = rfd::FileDialog::new()
                 .set_title("Сохранить файл")
@@ -36,7 +39,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 thread::spawn(move || {
                     let result = downloader::download(&url, &path);
                     
-                    slint::invoke_from_event_loop(move ||{
+                    let _ = slint::invoke_from_event_loop(move ||{
                         let ui = ui_handle.unwrap();
                         ui.set_is_working(false);
                         match result {
@@ -53,6 +56,58 @@ fn main() -> Result<(), Box<dyn Error>> {
                     });
                 });
             }
+    });
+    let ui_clone = ui.clone_strong();
+    ui.on_pick_file(move ||{
+        let ui_handle = ui_clone.as_weak();
+        let ui = ui_handle.unwrap();
+        let file_path = rfd::FileDialog::new()
+            .set_title("Выберите файл")
+            .pick_file();
+        if let Some(path) = file_path {
+            ui.set_file_path(path.clone().to_str().unwrap_or_default().into());
+            match converter::analyze_input(path.to_str().unwrap_or_default()) {
+                converter::MediaType::Video => {
+                    ui.invoke_picked_video();
+                }
+                converter::MediaType::Audio => {
+                    ui.invoke_picked_audio();
+                }
+            }
+        }
+    });
+    let ui_clone = ui.clone_strong();
+    ui.on_convert(move |opt,input_file| {
+        let ui_handle = ui_clone.as_weak();
+        let ui = ui_handle.unwrap();
+        let file_path = rfd::FileDialog::new()
+            .set_title("Сохранить как")
+            .save_file();
+        if let Some(path) = file_path {
+            // ui.set_is_working2(true);
+            // let ui_handle = ui_handle.clone();
+            // let dest_file = path.to_string_lossy().into_owned();
+            // thread::spawn(move || {
+            //     let result = converter::convert(&input_file, opt, &dest_file);
+
+            //     let _ = slint::invoke_from_event_loop(move || {
+            //         let ui = ui_handle.unwrap();
+            //         match result {
+            //             Ok(status) if status.success() => ui.set_is_success2(true),
+            //             Ok(status) => {
+            //                 ui.set_is_error2(true);
+            //                 ui.set_error_details2(format!("FFmpeg exited with {}", status).into());
+            //             }
+            //             Err(err) => {
+            //                 ui.set_is_error2(true);
+            //                 ui.set_error_details2(err.to_string().into());
+            //             }
+            //         }
+            //         ui.set_is_working2(false);
+            //     });
+            // });
+
+        }
     });
 
     ui.run()?;

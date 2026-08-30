@@ -10,17 +10,39 @@ export component AppWindow inherits Window {
     
     in-out property <int> tab-index: 0;
 
+    // callbacks
     callback download(string,int);
-    callback convert(ConvertOptions);
+    callback convert(ConvertOptions,string);
+    callback pick_file();
+    callback picked_audio();
+    callback picked_video();
     
-    
+    // properties for downloader
     in-out property <bool> is_working: false;
     in-out property <bool> is_success: false;
     in-out property <bool> is_error: false;
     in-out property <string> error_details: "";
+
+    // properties for converter
+    in-out property <string> file_path: "";
+    in-out property <bool> is_working2: false;
+    in-out property <bool> is_success2: false;
+    in-out property <bool> is_error2: false;
+    in-out property <string> error_details2: "";
+
+    //events for downloader
     changed is_error => {t1.is_error = is_error}
     changed is_success => {t1.is_success = is_success}
     changed is_working => {t1.is_working = is_working}
+
+    changed is_error2 => {t2.is_error = is_error2}
+    changed is_success2 => {t2.is_success = is_success2}
+    changed is_working2 => {t2.is_working = is_working2}
+
+    //events for converter
+    picked_audio => {t2.picked_audio();}
+    picked_video => {t2.picked_video();}
+    
     TabWidget {
         current-index: tab-index;
         Tab {
@@ -35,7 +57,11 @@ export component AppWindow inherits Window {
         }
         Tab {
             title: "Преобразование";
-            ConverterTab {convert(opt) => {root.convert(opt)}}
+            t2 := ConverterTab {
+                convert(opt,url) => {root.convert(opt,url)}
+                file_path <=> root.file_path;
+                pick_file() => {root.pick_file()}
+            }
         }
         Tab {
             title: "Массовое преобразование";

@@ -1,4 +1,4 @@
-import { Button, VerticalBox, StandardTableView, SpinBox, TabWidget, LineEdit, ComboBox, Spinner, StandardButton, HorizontalBox, ProgressIndicator } from "std-widgets.slint";
+import { Button, VerticalBox, StandardTableView, SpinBox, TabWidget, LineEdit, ComboBox, Spinner, StandardButton, HorizontalBox, ProgressIndicator, Palette, StyleMetrics } from "std-widgets.slint";
 
 export component DownloadTab inherits Rectangle {
     in-out property <string> url_in;
@@ -48,6 +48,7 @@ export component DownloadTab inherits Rectangle {
         }
         Button {
             text: "Скачать";
+            enabled: !url_in.is-empty;
             clicked => {
                 download(url_in,index);
                 is_working = true;
@@ -59,7 +60,7 @@ export component DownloadTab inherits Rectangle {
             visible: is_success;
             height: 35px;
             source: @image-url("images/success.svg");
-            colorize: white;
+            colorize: Palette.accent-background;
         }
         Spinner {
             visible: is_working;

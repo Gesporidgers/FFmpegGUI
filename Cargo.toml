@@ -1,17 +1,24 @@
 [package]
-name = "slint-rust-template"
+name = "ffmpeg-gui"
 version = "0.1.0"
 edition = "2021"
+author = ["TeoVR"]
+include = ["ui/images"]
+autoexamples = false
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 slint = "1.17.1"
 rfd = "*"
+csv = "1.4.0"
+serde = { version = "1.0.229", features = ["derive"] }
 
 [build-dependencies]
 slint-build = "1.17.1"
 
 [profile.release]
+opt-level = 2
 codegen-units = 1
 lto = true
